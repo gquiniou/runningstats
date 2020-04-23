@@ -1,6 +1,6 @@
 (ns runningstats.core
   (:gen-class)
-  (:require [clojure-csv.core :as csv])
+  (:require [clojure.data.csv :as csv])
   (:require [clojure.java.io :as io])
   (:require [java-time :as jt]))
 
@@ -8,7 +8,7 @@
 (defn loadcsv
   "parses CSV file and removes first and last row"
   []
-  (rest (drop-last (csv/parse-csv (slurp (io/resource "runningdata.csv"))))))
+  (rest (drop-last (csv/read-csv (slurp (io/resource "runningdata.csv"))))))
 
 
 (defn cleanrow
@@ -55,16 +55,23 @@
                                       :365days (trailingdist 365 run prevruns))))
     (when prevruns
       (recur prevruns)))
+  ;;dump results
   (summarize results :2days)
   (summarize results :3days)
   (summarize results :7days)
   (summarize results :30days)
   (summarize results :90days)
-  (summarize results :365days))
+  (summarize results :365days)
+  ;;export results as csv
+  (with-open [writer (io/writer "results.csv")]
+    (csv/write-csv writer
+                   [(map name (keys (first results)))])
+    (csv/write-csv writer
+                   (map #(vals %) results))))
 
 
 (defn -main
   "I don't do a whole lot ... yet."
   []
-  (let [rows (map cleanrow (take 100000 (loadcsv)))]
+  (let [rows (map cleanrow (take 1000000 (loadcsv)))]
     (statistics rows)))
