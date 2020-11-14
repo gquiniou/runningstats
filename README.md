@@ -1,4 +1,3 @@
 # runningstats
 
-calculate running stats from CSV data exported from smashrun.com
-
+calculate running stats from CSV data exported from smashrun
